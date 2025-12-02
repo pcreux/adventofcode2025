@@ -1,9 +1,9 @@
 class Dial
-  attr_reader :position, :zero_clicks
+  attr_reader :position, :clicks
 
-  def initialize(position)
+  def initialize(position, clicks = [])
     @position = position
-    @zero_clicks = 0
+    @clicks = clicks
   end
 
   def move(string)
@@ -11,16 +11,19 @@ class Dial
     steps = Integer(string[1..])
 
     new_position = position
-    steps.times do
+    clicks = steps.times.map do
       new_position = (new_position + direction) % 100
-      @zero_clicks += 1 if new_position == 0
     end
 
-    Dial.new(new_position)
+    Dial.new(new_position, clicks)
   end
 
   def position_is_zero?
     position == 0
+  end
+
+  def zero_clicks
+    clicks.select(&:zero?).count
   end
 end
 
