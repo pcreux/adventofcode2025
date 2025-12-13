@@ -26,6 +26,7 @@ def day05(input)
   pp ingredients.count { |i| fresh_ranges.any? { |r| r.include?(i) } }
 end
 
+# Takes forever to run
 def day05_2(input)
   ranges_str, ingredients_str = input.split("\n\n")
 
@@ -44,17 +45,6 @@ def day05_2(input)
   pp fresh_ingredients.size
 end
 
-def day05_3(input)
-  ranges_str, ingredients_str = input.split("\n\n")
-
-  fresh_ranges = ranges_str.split("\n").map do
-    b, e = _1.split("-").map(&:to_i)
-    (b..e)
-  end
-
-  pp fresh_ranges.flat_map { _1.to_a }.uniq.size
-end
-
 def day05_4(input)
   ranges_str, _ingredients_str = input.split("\n\n")
 
@@ -63,32 +53,19 @@ def day05_4(input)
   puts "Sorting..."
   ranges.sort!
 
-  fresh_ingredients = Set.new
   compressed_ranges = compress_ranges(ranges)
-
-  previous_range = nil
-  compressed_ranges.each do |r|
-    pp r
-    if previous_range && previous_range.last >= r.first
-      raise "Compact failed: previous range overlaps current range #{previous_range} / #{r}"
-    end
-    previous_range = r
-  end
-
   pp compressed_ranges.sum(&:size)
 end
 
 def compress_ranges(ranges)
   compressed_ranges = ranges.dup
 
-  puts "Getting #{ranges.size}..."
-
   ranges.each_with_index do |(x, y), index_1|
     ranges[(index_1 + 1)..].each_with_index do |(i, j), index_2|
       compressed_index = index_1 + 1 + index_2
 
       if i.between?(x, y) && j > y
-        # x ---- y      (extend to j)
+        # x ---- y      (replace by x --- j)
         #   i ------ j  (drop)
         compressed_ranges[index_1] = [x, j]
         compressed_ranges[compressed_index] = nil
@@ -101,8 +78,6 @@ def compress_ranges(ranges)
   end
 
   compressed_ranges.compact!
-
-  puts "  => compressed to #{compressed_ranges.size}"
 
   return compressed_ranges.map { |x, y| (x..y) } if compressed_ranges.size == ranges.size
 
