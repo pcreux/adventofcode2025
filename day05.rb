@@ -1,3 +1,5 @@
+require 'set'
+
 INPUT = <<~STR
 3-5
 10-14
@@ -64,12 +66,13 @@ def day05_4(input)
   fresh_ingredients = Set.new
   compressed_ranges = compress_ranges(ranges)
 
-  previous_y = nil
+  previous_range = nil
   compressed_ranges.each do |r|
-    x = r.first
-    y = r.last
-    raise "Compact failed: previous y is #{previous_y} but current x is #{x}" if previous_y && x <= previous_y
-    previous_y = y
+    pp r
+    if previous_range && previous_range.last >= r.first
+      raise "Compact failed: previous range overlaps current range #{previous_range} / #{r}"
+    end
+    previous_range = r
   end
 
   pp compressed_ranges.sum(&:size)
@@ -82,17 +85,17 @@ def compress_ranges(ranges)
 
   ranges.each_with_index do |(x, y), index_1|
     ranges[(index_1 + 1)..].each_with_index do |(i, j), index_2|
+      compressed_index = index_1 + 1 + index_2
+
       if i.between?(x, y) && j > y
         # x ---- y      (extend to j)
         #   i ------ j  (drop)
         compressed_ranges[index_1] = [x, j]
-        compressed_ranges[index_2] = nil
-        puts "(#{x} - #{y}) + (#{i} - #{j}) => (#{x} - #{j}) (REPLACE)"
+        compressed_ranges[compressed_index] = nil
       elsif i.between?(x, y) && j.between?(x, y)
         # x ------- y
         #   i -- j  (drop)
-        compressed_ranges[index_2] = nil
-        puts "(#{x} - #{y}) + (#{i} - #{j}) => (#{x} - #{y}) (DROP)"
+        compressed_ranges[compressed_index] = nil
       end
     end
   end
@@ -114,3 +117,6 @@ day05_4(INPUT)
 
 day05_4(File.read('day05.txt'))
 
+# 9200302749056
+# 379171333752001
+# 344771884978261 :star:
