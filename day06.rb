@@ -5,12 +5,10 @@ INPUT = <<STR
 *   +   *   +
 STR
 
-require "matrix"
-
 def solve(input)
   matrix = input.split("\n").map { _1.strip.split(/\s+/) }
 
-  lines = Matrix[*matrix].transpose.to_a
+  lines = matrix.transpose.to_a
 
   r = lines.sum do |l|
     l[0..-2].reduce(nil) do |acc, v|
@@ -36,7 +34,7 @@ def solve_2(input)
   lines = input.split("\n")
   size = lines.map(&:size).max
   matrix = lines.map { _1.ljust(size, " ").reverse.split("") }
-  transp = Matrix[*matrix].transpose.to_a
+  transp = matrix.transpose.to_a
 
   running_total = 0
   current_numbers = []
@@ -50,7 +48,7 @@ def solve_2(input)
       running_total += current_numbers.sum
       current_numbers = []
     when "*"
-      running_total += current_numbers.reduce(1) { |acc, v| acc * v }
+      running_total += current_numbers.reduce(&:*)
       current_numbers = []
     end
   end
