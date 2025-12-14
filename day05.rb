@@ -45,19 +45,22 @@ def day05_2(input)
   pp fresh_ingredients.size
 end
 
-def day05_4(input)
+def day05_2b(input)
   ranges_str, _ingredients_str = input.split("\n\n")
 
-  ranges = ranges_str.split("\n").map { _1.split("-").map(&:to_i) }
+  ranges = ranges_str.split("\n").map { _1.split("-").map(&:to_i) }.sort
 
-  puts "Sorting..."
-  ranges.sort!
-
-  compressed_ranges = compress_ranges(ranges)
-  pp compressed_ranges.sum(&:size)
+  compress_ranges_v1(ranges).sum(&:size)
 end
 
-def compress_ranges(ranges)
+def day05_2c(input)
+  ranges_str, _ingredients_str = input.split("\n\n")
+
+  ranges = ranges_str.split("\n").map { _1.split("-").map(&:to_i) }.sort.map { |i, j| (i..j) }
+  compress_ranges_v2(ranges).sum(&:size)
+end
+
+def compress_ranges_v1(ranges)
   compressed_ranges = ranges.dup
 
   ranges.each_with_index do |(x, y), index_1|
@@ -81,17 +84,33 @@ def compress_ranges(ranges)
 
   return compressed_ranges.map { |x, y| (x..y) } if compressed_ranges.size == ranges.size
 
-  compress_ranges(compressed_ranges)
+  compress_ranges_v1(compressed_ranges)
+end
+
+def compress_ranges_v2(ranges)
+  return ranges if ranges.all? { |r| ranges.select { _1.overlap?(r) }.size == 1 }
+
+  range = ranges.first
+  overlapping_ranges, non_overlapping_ranges = ranges.partition { |r| range.overlap?(r) }
+
+  min = overlapping_ranges.map(&:first).min
+  max = overlapping_ranges.map(&:last).max
+
+  compress_ranges_v2(non_overlapping_ranges + [(min..max)])
 end
 
 day05(INPUT)
 
 day05(File.read('day05.txt'))
 
-day05_4(INPUT)
+pp day05_2b(INPUT)
+pp day05_2b(File.read('day05.txt'))
 
-day05_4(File.read('day05.txt'))
+pp day05_2c(INPUT)
+pp day05_2c(File.read('day05.txt'))
 
 # 9200302749056
 # 379171333752001
-# 344771884978261 :star:
+# 344771884978261 :star: v1
+#
+# 352333738883927 v2?
